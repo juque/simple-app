@@ -8,8 +8,19 @@ use App\Models\Student;
 
 class HomeController extends Controller
 {
-  public function index(): View 
+  public function index(Request $request): View 
   {
-    return view('home', ['students' => Student::paginate(10)]);
+    $search = $request->input('search');
+
+    $students = Student::when($search, function($query, $search){
+      $query->where('given_name', 'like', "%{$search}%")
+            ->orWhere('middle_name', 'like', "%{$search}%")
+            ->orWhere('surname', 'like', "%{$search}");
+    })->paginate(10);
+
+    return view('home', [
+      'students' => $students,
+      'search'   => $search
+    ]);
   }
 }
